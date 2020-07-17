@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from sentry.models import Integration
 from sentry.utils.compat import filter
+from sentry.utils.http import absolute_uri
 from .client import MsTeamsClient
 
 MSTEAMS_MAX_ITERS = 100
@@ -52,3 +53,57 @@ def get_channel_id(organization, integration_id, name):
         members = client.get_member_list(team_id, continuation_token)
 
     return None
+
+
+def build_welcome_card(signed_params):
+    url = u"%s?signed_params=%s" % (absolute_uri("/extensions/msteams/configure/"), signed_params,)
+    # TODO: Refactor message creation
+    logo = {
+        "type": "Image",
+        "url": "https://sentry-brand.storage.googleapis.com/sentry-glyph-black.png",
+        "size": "Medium",
+    }
+    welcome = {
+        "type": "TextBlock",
+        "weight": "Bolder",
+        "size": "Large",
+        "text": "Welcome to Sentry for Microsoft Teams",
+        "wrap": True,
+    }
+    description = {
+        "type": "TextBlock",
+        "text": "You can use the Sentry app for Microsoft Teams to get notifications that allow you to assign, ignore, or resolve directly in your chat.",
+        "wrap": True,
+    }
+    instruction = {
+        "type": "TextBlock",
+        "text": "If that sounds good to you, finish the setup process.",
+        "wrap": True,
+    }
+    button = {
+        "type": "Action.OpenUrl",
+        "title": "Complete Setup",
+        "url": url,
+    }
+    return {
+        "type": "AdaptiveCard",
+        "body": [
+            {
+                "type": "ColumnSet",
+                "columns": [
+                    {"type": "Column", "items": [logo], "width": "auto"},
+                    {
+                        "type": "Column",
+                        "items": [welcome],
+                        "width": "stretch",
+                        "verticalContentAlignment": "Center",
+                    },
+                ],
+            },
+            description,
+            instruction,
+        ],
+        "actions": [button],
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.2",
+    }

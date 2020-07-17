@@ -68,6 +68,21 @@ class MSTeamsNotifyServiceAction(EventAction):
     def is_enabled(self):
         return self.get_integrations().exists()
 
+    def after(self, event, state):
+        # integration_id = self.get_option("team")
+        # channel = self.get_option("channel_id")
+
+        try:
+            pass
+            # integration = Integration.objects.get(
+            #     provider="msteams", organizations=self.project.organization, id=integration_id
+            # )
+        except Integration.DoesNotExist:
+            return
+
+        def send_notification(event, futures):
+            pass
+
     def render_label(self):
         try:
             integration_name = Integration.objects.get(

@@ -15,6 +15,7 @@ from sentry.utils.signing import sign
 from sentry.web.decorators import transaction_start
 
 from .client import MsTeamsPreInstallClient, MsTeamsJwtClient, get_token_data, CLOCK_SKEW
+from .utils import build_welcome_card
 
 logger = logging.getLogger("sentry.integrations.msteams.webhooks")
 
@@ -108,6 +109,7 @@ class MsTeamsWebhookEndpoint(Endpoint):
 
                 # send welcome message to the team
                 client = MsTeamsPreInstallClient(access_token, data["serviceUrl"])
-                client.send_welcome_message(team_id, signed_params)
+                card = build_welcome_card(signed_params)
+                client.send_card(team_id, card)
 
         return self.respond(status=200)
