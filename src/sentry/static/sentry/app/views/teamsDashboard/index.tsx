@@ -3,6 +3,7 @@ import {RouteComponentProps} from 'react-router/lib/Router';
 import {Location} from 'history';
 import styled from '@emotion/styled';
 
+import EmptyMessage from 'app/views/settings/components/emptyMessage';
 import {openCreateTeamModal} from 'app/actionCreators/modal';
 import Button from 'app/components/button';
 import {t} from 'app/locale';
@@ -10,7 +11,7 @@ import withOrganization from 'app/utils/withOrganization';
 import SentryDocumentTitle from 'app/components/sentryDocumentTitle';
 import PageHeading from 'app/components/pageHeading';
 import {Organization, Team} from 'app/types';
-import {IconAdd} from 'app/icons';
+import {IconAdd, IconFile} from 'app/icons';
 import ListLink from 'app/components/links/listLink';
 import NavTabs from 'app/components/navTabs';
 import recreateRoute from 'app/utils/recreateRoute';
@@ -35,13 +36,13 @@ const TeamsDashboard = ({organization, routes, location, params, teams}: Props) 
   const hasTeamAdminAccess = access.has('project:admin');
   const displayMyTeams = location.pathname.endsWith('my-teams/');
   const baseUrl = recreateRoute('', {location, routes, params, stepBack: -1});
+
   const displayTeams = displayMyTeams ? teams.filter(team => team.isMember) : teams;
+  const createTeamLabel = t('Create Team');
 
   const handleCreateTeam = () => {
     openCreateTeamModal({organization});
   };
-
-  console.log('displayTeams', displayTeams);
 
   return (
     <React.Fragment>
@@ -60,27 +61,52 @@ const TeamsDashboard = ({organization, routes, location, params, teams}: Props) 
             onClick={handleCreateTeam}
             icon={<IconAdd size="xs" isCircled />}
           >
-            {t('Create Team')}
+            {createTeamLabel}
           </Button>
         </PageHeader>
-        <NavTabs underlined>
-          <ListLink to={baseUrl} index isActive={() => !displayMyTeams}>
-            {t('All Teams')}
-          </ListLink>
-          <ListLink to={`${baseUrl}my-teams/`} isActive={() => displayMyTeams}>
-            {t('My Teams')}
-          </ListLink>
-        </NavTabs>
-        <Content>
-          {displayTeams.map(displayTeam => (
-            <TeamCard
-              key={displayTeam.id}
-              hasTeamAdminAccess={hasTeamAdminAccess}
-              organization={organization}
-              team={displayTeam}
-            />
-          ))}
-        </Content>
+        {displayTeams.length > 0 ? (
+          <React.Fragment>
+            <NavTabs underlined>
+              <ListLink to={baseUrl} index isActive={() => !displayMyTeams}>
+                {t('All Teams')}
+              </ListLink>
+              <ListLink to={`${baseUrl}my-teams/`} isActive={() => displayMyTeams}>
+                {t('My Teams')}
+              </ListLink>
+            </NavTabs>
+            <Content>
+              {displayTeams.map(displayTeam => (
+                <TeamCard
+                  key={displayTeam.id}
+                  hasTeamAdminAccess={hasTeamAdminAccess}
+                  organization={organization}
+                  team={displayTeam}
+                />
+              ))}
+            </Content>
+          </React.Fragment>
+        ) : (
+          <EmptyMessage
+            size="large"
+            title={t('No teams have been created yet.')}
+            icon={<IconFile size="xl" />}
+            action={
+              <Button
+                size="small"
+                disabled={!hasTeamAdminAccess}
+                title={
+                  !hasTeamAdminAccess
+                    ? t('You do not have permission to create teams')
+                    : undefined
+                }
+                onClick={handleCreateTeam}
+                icon={<IconAdd size="xs" isCircled />}
+              >
+                {createTeamLabel}
+              </Button>
+            }
+          />
+        )}
       </PageContent>
     </React.Fragment>
   );
