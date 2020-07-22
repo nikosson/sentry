@@ -1,6 +1,7 @@
 import React from 'react';
 import {RouteComponentProps} from 'react-router/lib/Router';
 import {Location} from 'history';
+import styled from '@emotion/styled';
 
 import {openCreateTeamModal} from 'app/actionCreators/modal';
 import Button from 'app/components/button';
@@ -15,6 +16,7 @@ import NavTabs from 'app/components/navTabs';
 import recreateRoute from 'app/utils/recreateRoute';
 import {PageContent, PageHeader} from 'app/styles/organization';
 import withTeams from 'app/utils/withTeams';
+import space from 'app/styles/space';
 
 import TeamCard from './teamCard';
 
@@ -30,7 +32,7 @@ type Props = RouteComponentProps<
 
 const TeamsDashboard = ({organization, routes, location, params, teams}: Props) => {
   const access = new Set(organization.access);
-  const canCreateTeams = access.has('project:admin');
+  const hasTeamAdminAccess = access.has('project:admin');
   const displayMyTeams = location.pathname.endsWith('my-teams/');
   const baseUrl = recreateRoute('', {location, routes, params, stepBack: -1});
   const displayTeams = displayMyTeams ? teams.filter(team => team.isMember) : teams;
@@ -38,6 +40,8 @@ const TeamsDashboard = ({organization, routes, location, params, teams}: Props) 
   const handleCreateTeam = () => {
     openCreateTeamModal({organization});
   };
+
+  console.log('displayTeams', displayTeams);
 
   return (
     <React.Fragment>
@@ -47,9 +51,9 @@ const TeamsDashboard = ({organization, routes, location, params, teams}: Props) 
           <PageHeading>{t('Teams')}</PageHeading>
           <Button
             size="small"
-            disabled={!canCreateTeams}
+            disabled={!hasTeamAdminAccess}
             title={
-              !canCreateTeams
+              !hasTeamAdminAccess
                 ? t('You do not have permission to create teams')
                 : undefined
             }
@@ -67,12 +71,25 @@ const TeamsDashboard = ({organization, routes, location, params, teams}: Props) 
             {t('My Teams')}
           </ListLink>
         </NavTabs>
-        {displayTeams.map(displayTeam => (
-          <TeamCard key={displayTeam.id} {...displayTeam} />
-        ))}
+        <Content>
+          {displayTeams.map(displayTeam => (
+            <TeamCard
+              key={displayTeam.id}
+              hasTeamAdminAccess={hasTeamAdminAccess}
+              organization={organization}
+              team={displayTeam}
+            />
+          ))}
+        </Content>
       </PageContent>
     </React.Fragment>
   );
 };
 
 export default withOrganization(withTeams(TeamsDashboard));
+
+const Content = styled('div')`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-gap: ${space(3)};
+`;
