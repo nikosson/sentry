@@ -6,7 +6,8 @@ import {Team, Organization} from 'app/types';
 import IdBadge from 'app/components/idBadge';
 import Link from 'app/components/links/link';
 import DateTime from 'app/components/dateTime';
-import {tn} from 'app/locale';
+
+import TeamMembers from './teamMembers';
 
 type Props = {
   team: Team;
@@ -32,7 +33,7 @@ const TeamCard = ({hasTeamAdminAccess, organization, team}: Props) => {
             'Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. Maecenas malesuada. Praesent congue erat at massa.'
           }
         </Description>
-        <div>{tn('%s Member', '%s Members', team.memberCount)}</div>
+        <TeamMembers orgId={organization.id} teamId={team.id} />
         <div>
           <DateTime date={team.dateCreated} />
         </div>
